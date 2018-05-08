@@ -21,7 +21,8 @@ Options:
                         is a trusted domain in the config.php)
   -c CHECK, --check=CHECK
                         The thing you want to check
-                        [system|storage|shares|webserver|php|database|users]
+                        [system|storage|shares|webserver|php|database|activeUsers|uploadFilesize]
+  --upload-filesize     Filesize in MiB, GiB without spaces (default="512.0GiB")
   --protocol=PROTOCOL   Protocol you want to use [http|https]
                         (default="https")
   --ignore-proxy        Ignore any configured proxy server on this system for
@@ -35,7 +36,13 @@ Options:
 
 * Copy the check (python script) in your nagios/centreon plugins folder
 * Create a check with the following command line:
-  `$USER1$/plugins_custom/check_nextcloud.py -u $_HOSTCLOUDUSER$ -p $_HOSTCLOUDPWD$ -H $HOSTNAME$ -c $ARG1$ --ignore-proxy`
+  ```
+  $USER1$/plugins_custom/check_nextcloud.py -u $_HOSTCLOUDUSER$ -p $_HOSTCLOUDPWD$ -H $HOSTNAME$ -c $ARG1$ --ignore-proxy
+  ```
+  or for the check: `uploadFilesize`
+  ```
+  $USER1$/plugins_custom/check_nextcloud.py -u $_HOSTCLOUDUSER$ -p $_HOSTCLOUDPWD$ -H $HOSTNAME$ -c $ARG1$ --upload-filesize=$ARG2$ --ignore-proxy
+  ```
 * Create a service for each thing you want to check (system, storage, etc.) and link it to your host(s)
 * Add the credentials of your nextcloud admin user as custom macro (CLOUDUSER, COUDPWD) to your host.
 
@@ -56,3 +63,16 @@ OK - Last 5 minutes: 3 user(s), last 1 hour: 10 user(s), last 24 hour: 44 user(s
 ```
 
 This will return a status message and create a graph based on the performance data.
+
+## Example 3
+
+```
+./check_nextcloud.py -u adminUser -p secretPassword -H cloud.example.com -c uploadFilesize --upload-filesize=2.0GiB --ignore-proxy
+
+OK - Upload max filesize: 2.0GiB
+
+# Or, when changed after an update...
+
+CRITICAL - Upload max filesize is set to 512.0MiB, but should be 2.0GiB
+
+```

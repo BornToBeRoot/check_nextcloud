@@ -23,12 +23,13 @@ def calc_size_nagios(num, suffix='B'):
 # Command line parser
 from optparse import OptionParser
 
-parser = OptionParser(usage='%prog -u username -p password -H cloud.example.com -c [system|storage|shares|webserver|php|database|users]')
+parser = OptionParser(usage='%prog -u username -p password -H cloud.example.com -c [system|storage|shares|webserver|php|database|activeUsers|uploadFilesize]')
 parser.add_option('-v', '--version', dest='version', default=False, action='store_true', help='Print the version of this script')
 parser.add_option('-u', '--username', dest='username', type='string', help='Username of the user with administrative permissions on the nextcloud server')
 parser.add_option('-p', '--password', dest='password', type='string', help='Password of the user')
 parser.add_option('-H', '--hostname', dest='hostname', type='string', help='Nextcloud server address (make sure that the address is a trusted domain in the config.php)')
-parser.add_option('-c', '--check', dest='check', choices=['system','storage','shares','webserver','php','database','users'], help='The thing you want to check [system|storage|shares|webserver|php|database|users]')
+parser.add_option('-c', '--check', dest='check', choices=['system','storage','shares','webserver','php','database','activeUsers','uploadFilesize'], help='The thing you want to check [system|storage|shares|webserver|php|database|activeUsers|uploadFilesize]')
+parser.add_option('--upload-filesize', dest='upload_filesize', default='512.0MiB', help='Filesize in MiB, GiB without spaces (default="512.0GiB")')
 parser.add_option('--protocol', dest='protocol', choices=['https', 'http'], default='https', help='Protocol you want to use [http|https] (default="https")')
 parser.add_option('--ignore-proxy', dest='ignore_proxy', default=False, action='store_true', help='Ignore any configured proxy server on this system for this request')
 parser.add_option('--api-url', dest='api_url', type='string', default='/ocs/v2.php/apps/serverinfo/api/v1/info', help='Url of the api (default="/ocs/v2.php/apps/serverinfo/api/v1/info")')
@@ -37,7 +38,7 @@ parser.add_option('--api-url', dest='api_url', type='string', default='/ocs/v2.p
 
 # Print the version of this script
 if options.version:
-	print 'Version 1.0.0'
+	print 'Version 1.1'
 	sys.exit(0)
 
 # Validate the user input...
@@ -61,6 +62,9 @@ if not options.check:
 	parser.error('Check is required, use parameter [-c|--check]')
 	sys.exit(3)
 
+# Re-validate the hostname given by the user (make sure they dont entered a "https://", "http://" or "/")
+hostname = options.hostname.lstrip('[https|http]://').split('/')[0]
+
 # Re-validate the api_url
 if options.api_url.startswith('/'):
 	api_url = options.api_url
@@ -68,7 +72,7 @@ else:
 	api_url = '/{0}'.format(options.api_url)
 
 # Create the url to access the api
-url = '{0}://{1}{2}'.format(options.protocol, options.hostname, api_url)
+url = '{0}://{1}{2}'.format(options.protocol, hostname, api_url)
 
 # Encode credentials as base64
 credential = base64.b64encode(options.username + ':' + options.password)
@@ -98,7 +102,7 @@ except urllib2.HTTPError as error:      # User is not authorized (401)
 	sys.exit(3)
 
 except urllib2.URLError as error:	# Connection has timed out (wrong url / server down)
-	print 'UNKOWN - [WEBREQUEST] {0}'.format(str(error.reason))
+	print 'UNKOWN - [WEBREQUEST] {0}'.format(str(error.reason).split(']')[0].strip())
 	sys.exit(3)
 
 try:
@@ -195,7 +199,7 @@ if options.check == 'database':
 	sys.exit(0)
 
 # Check the active users
-if options.check == 'users':
+if options.check == 'activeUsers':
 	xml_activeUsers = xml_root.find('data').find('activeUsers')
 
 	xml_activeUsers_last5minutes = int(xml_activeUsers.find('last5minutes').text)
@@ -204,3 +208,19 @@ if options.check == 'users':
 
 	print 'OK - Last 5 minutes: {0} user(s), last 1 hour: {1} user(s), last 24 hour: {2} user(s) | users_last_5_minutes={0}, users_last_1_hour={1}, users_last_24_hours={2}'.format(xml_activeUsers_last5minutes, xml_activeUsers_last1hour, xml_activeUsers_last24hours)
 	sys.exit(0)
+
+if options.check == 'uploadFilesize':
+	xml_php = xml_root.find('data').find('server').find('php')
+	
+	# Get upload max filesize
+	xml_php_upload_max_filesize = int(xml_php.find('upload_max_filesize').text)
+
+	# Convert
+	upload_max_filesize = calc_size_suffix(xml_php_upload_max_filesize)
+
+	if options.upload_filesize == upload_max_filesize:
+		print 'OK - Upload max filesize: {0}'.format(upload_max_filesize)
+		sys.exit(0)		
+	else:
+		print 'CRITICAL - Upload max filesize is set to {0}, but should be {1}'.format(upload_max_filesize, options.upload_filesize)
+		sys.exit(2)
