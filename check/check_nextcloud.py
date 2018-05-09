@@ -1,4 +1,13 @@
 #!/usr/bin/python
+
+###############################################################################################################
+# Language     :  Python (2.7)
+# Filename     :  check_nextcloud.py
+# Autor        :  https://github.com/BornToBeRoot
+# Description  :  Nagios/Centreon plugin for nextcloud serverinfo API (https://github.com/nextcloud/serverinfo)
+# Repository   :  https://github.com/BornToBeRoot/check_nextcloud
+###############################################################################################################
+
 import urllib2, base64, xml.etree.ElementTree, sys, traceback
 
 # Some helper functions
