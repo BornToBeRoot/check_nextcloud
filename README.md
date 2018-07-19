@@ -1,4 +1,4 @@
-# check_nextcloud.py
+# check_nextcloud
 
 Nagios/Centreon plugin for nextcloud serverinfo API (https://github.com/nextcloud/serverinfo)
 
