@@ -9,6 +9,7 @@
 ###############################################################################################################
 
 import urllib2, base64, xml.etree.ElementTree, sys, traceback
+import re
 
 # Some helper functions
 def calc_size_suffix(num, suffix='B'):
@@ -72,7 +73,8 @@ if not options.check:
 	sys.exit(3)
 
 # Re-validate the hostname given by the user (make sure they dont entered a "https://", "http://" or "/")
-hostname = options.hostname.lstrip('[https|http]://').split('/')[0]
+url_strip = re.compile(r"https?://")
+hostname = url_strip.sub('', options.hostname).split('/')[0]
 
 # Re-validate the api_url
 if options.api_url.startswith('/'):
