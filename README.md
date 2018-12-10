@@ -57,7 +57,7 @@ OK - Nextcloud version: 12.0.3.3
 ## Example 2
 
 ```
-./check_nextcloud.py -u adminUser -p secretPassword -H cloud.example.com -c users --ignore-proxy
+./check_nextcloud.py -u adminUser -p secretPassword -H cloud.example.com -c activeUsers --ignore-proxy
 
 OK - Last 5 minutes: 3 user(s), last 1 hour: 10 user(s), last 24 hour: 44 user(s) | users_last_5_minutes=3, users_last_1_hour=10, users_last_24_hours=44
 ```
