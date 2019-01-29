@@ -8,7 +8,7 @@
 # Repository   :  https://github.com/BornToBeRoot/check_nextcloud
 ###############################################################################################################
 
-import urllib2, base64, xml.etree.ElementTree, sys, traceback
+import urllib2, base64, xml.etree.ElementTree, sys, traceback, ssl
 import re
 
 # Some helper functions
@@ -103,7 +103,7 @@ try:
 
 		response = opener.open(request)
 	else:
-		response = urllib2.urlopen(request)
+		response = urllib2.urlopen(request, context=ssl.SSLContext(ssl.PROTOCOL_TLS))
 
 	# Read the content
 	content = response.read()
