@@ -8,7 +8,16 @@
 # Repository   :  https://github.com/BornToBeRoot/check_nextcloud
 ###############################################################################################################
 
-import urllib2, base64, xml.etree.ElementTree, sys, traceback
+### Changelog ###
+#
+# ~~ Version 1.2 ~~
+# - Parameter "--ignore-ssl" added. (Note: If you use an ip address as hostname... you need to add the ip address as 
+#   trusted domain in the config.php)
+#  
+#################
+
+
+import urllib2, base64, xml.etree.ElementTree, sys, traceback, ssl
 import re
 
 # Some helper functions
@@ -41,14 +50,15 @@ parser.add_option('-H', '--hostname', dest='hostname', type='string', help='Next
 parser.add_option('-c', '--check', dest='check', choices=['system','storage','shares','webserver','php','database','activeUsers','uploadFilesize'], help='The thing you want to check [system|storage|shares|webserver|php|database|activeUsers|uploadFilesize]')
 parser.add_option('--upload-filesize', dest='upload_filesize', default='512.0MiB', help='Filesize in MiB, GiB without spaces (default="512.0GiB")')
 parser.add_option('--protocol', dest='protocol', choices=['https', 'http'], default='https', help='Protocol you want to use [http|https] (default="https")')
-parser.add_option('--ignore-proxy', dest='ignore_proxy', default=False, action='store_true', help='Ignore any configured proxy server on this system for this request')
+parser.add_option('--ignore-proxy', dest='ignore_proxy', default=False, action='store_true', help='Ignore any configured proxy server on this system for this request (default="false")')
+parser.add_option('--ignore-ssl', dest='ignore_ssl', default=False, action='store_true', help='Ignore ssl certificate (default="false")')
 parser.add_option('--api-url', dest='api_url', type='string', default='/ocs/v2.php/apps/serverinfo/api/v1/info', help='Url of the api (default="/ocs/v2.php/apps/serverinfo/api/v1/info")')
 
 (options, args) = parser.parse_args()
 
 # Print the version of this script
 if options.version:
-	print 'Version 1.1'
+	print 'Version 1.2'
 	sys.exit(0)
 
 # Validate the user input...
@@ -96,14 +106,22 @@ try:
 	request.add_header('Authorization', "Basic %s" % credential)
 	request.add_header('OCS-APIRequest','true')
 	
+	# SSL/TLS certificate validation (see: https://stackoverflow.com/questions/19268548/python-ignore-certificate-validation-urllib2)
+	ctx = ssl.create_default_context()
+
+	if(options.ignore_ssl):
+		ctx.check_hostname = False
+		ctx.verify_mode = ssl.CERT_NONE
+
 	# Proxy handler
 	if(options.ignore_proxy):
 		proxy_handler = urllib2.ProxyHandler({})
-		opener = urllib2.build_opener(proxy_handler)
+		ctx_handler = urllib2.HTTPSHandler(context=ctx)
+		opener = urllib2.build_opener(proxy_handler, ctx_handler)
 
 		response = opener.open(request)
 	else:
-		response = urllib2.urlopen(request)
+		response = urllib2.urlopen(request, context=ctx)
 
 	# Read the content
 	content = response.read()
