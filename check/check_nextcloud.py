@@ -8,16 +8,19 @@
 # Repository   :  https://github.com/BornToBeRoot/check_nextcloud
 ###############################################################################################################
 
-### Changelog #################################################################################################
-# ~~ Version 2.0 ~~
-# - Update to Python 3.*
-# - Check: Theme
-# - [not implemented yet] Check: App + Updates available
-# - [not implemented yet] Check: Cache/Filelocking
-# - [not implemented yet] Open pull requests...
-###############################################################################################################
+### Changelog ###
+#
+# ~~ Version 1.2 ~~
+# - Parameter "--ignore-ssl" added. (Note: If you use an ip address as hostname... you need to add the ip address as 
+#   trusted domain in the config.php)
+#  
+#################
 
-import urllib.parse, urllib.request, urllib.response, base64, xml.etree.ElementTree, sys, traceback, re
+### ToDo #################################################################################################
+# - Check: Theme
+# - Check: App + Updates available
+# - Check: Cache/Filelocking
+###############################################################################################################
 
 # Some helper functions
 def calc_size_suffix(num, suffix='B'):
@@ -49,15 +52,16 @@ parser.add_option('-H', '--hostname', dest='hostname', type='string', help='Next
 parser.add_option('-c', '--check', dest='check', choices=['system','theme','storage','shares','webserver','php','database','activeUsers','uploadFilesize'], help='The thing you want to check [system|theme|storage|shares|webserver|php|database|activeUsers|uploadFilesize]')
 parser.add_option('--upload-filesize', dest='upload_filesize', default='512.0MiB', help='Filesize in MiB, GiB without spaces (default="512.0GiB")')
 parser.add_option('--protocol', dest='protocol', choices=['https', 'http'], default='https', help='Protocol you want to use [http|https] (default="https")')
-parser.add_option('--ignore-proxy', dest='ignore_proxy', default=False, action='store_true', help='Ignore any configured proxy server on this system for this request')
+parser.add_option('--ignore-proxy', dest='ignore_proxy', default=False, action='store_true', help='Ignore any configured proxy server on this system for this request (default="false")')
+parser.add_option('--ignore-ssl', dest='ignore_ssl', default=False, action='store_true', help='Ignore ssl certificate (default="false")')
 parser.add_option('--api-url', dest='api_url', type='string', default='/ocs/v2.php/apps/serverinfo/api/v1/info', help='Url of the api (default="/ocs/v2.php/apps/serverinfo/api/v1/info")')
 
 (options, args) = parser.parse_args()
 
 # Print the version of this script
 if options.version:
-    print('Version 2.0')
-    sys.exit(0)
+	print 'Version 1.2'
+	sys.exit(0)
 
 # Validate the user input...
 if not options.username and not options.password and not options.hostname and not options.check:
@@ -100,7 +104,26 @@ request = urllib.request.Request(url)
 credential = base64.b64encode(bytes('%s:%s' % (options.username, options.password), 'ascii'))
 request.add_header("Authorization", "Basic %s" % credential.decode('utf-8'))
 
-request.add_header('OCS-APIRequest', 'true')
+	# Add the authentication and api request header
+	request.add_header('Authorization', "Basic %s" % credential)
+	request.add_header('OCS-APIRequest','true')
+	
+	# SSL/TLS certificate validation (see: https://stackoverflow.com/questions/19268548/python-ignore-certificate-validation-urllib2)
+	ctx = ssl.create_default_context()
+
+	if(options.ignore_ssl):
+		ctx.check_hostname = False
+		ctx.verify_mode = ssl.CERT_NONE
+
+	# Proxy handler
+	if(options.ignore_proxy):
+		proxy_handler = urllib2.ProxyHandler({})
+		ctx_handler = urllib2.HTTPSHandler(context=ctx)
+		opener = urllib2.build_opener(proxy_handler, ctx_handler)
+
+		response = opener.open(request)
+	else:
+		response = urllib2.urlopen(request, context=ctx)
 
 try:
 	with urllib.request.urlopen(request) as response:	
