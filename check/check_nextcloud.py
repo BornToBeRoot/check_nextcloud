@@ -13,12 +13,11 @@
 # ~~ Version 1.2 ~~
 # - Parameter "--ignore-ssl" added. (Note: If you use an ip address as hostname... you need to add the ip address as 
 #   trusted domain in the config.php)
-#  
+# - Parameter "--perfdata-format" added [centreon|nagios] (default="centreon")
+#
 #################
 
-
-import urllib2, base64, xml.etree.ElementTree, sys, traceback, ssl
-import re
+import urllib2, base64, xml.etree.ElementTree, sys, traceback, ssl, re
 
 # Some helper functions
 def calc_size_suffix(num, suffix='B'):
@@ -48,6 +47,7 @@ parser.add_option('-u', '--username', dest='username', type='string', help='User
 parser.add_option('-p', '--password', dest='password', type='string', help='Password of the user')
 parser.add_option('-H', '--hostname', dest='hostname', type='string', help='Nextcloud server address (make sure that the address is a trusted domain in the config.php)')
 parser.add_option('-c', '--check', dest='check', choices=['system','storage','shares','webserver','php','database','activeUsers','uploadFilesize'], help='The thing you want to check [system|storage|shares|webserver|php|database|activeUsers|uploadFilesize]')
+parser.add_option('--perfdata-format', dest='perfdata_format', default='centreon', choices=['centreon','nagios'], help='Format for the performance data [centreon|nagios] (default="centreon")')
 parser.add_option('--upload-filesize', dest='upload_filesize', default='512.0MiB', help='Filesize in MiB, GiB without spaces (default="512.0GiB")')
 parser.add_option('--protocol', dest='protocol', choices=['https', 'http'], default='https', help='Protocol you want to use [http|https] (default="https")')
 parser.add_option('--ignore-proxy', dest='ignore_proxy', default=False, action='store_true', help='Ignore any configured proxy server on this system for this request (default="false")')
@@ -159,7 +159,14 @@ except AttributeError:
 	print 'UNKOWN - [XML] Content contains no or wrong xml data... check the url and if the api is reachable!'
 	sys.exit(3)
 
-# Get the nextcloud version... other informations about the system like RAM/CPU/DISK are nagios/centreon own checks - so we don't need them here...
+# Performance data format
+perfdata_format = ""							# nagios
+
+if(options.perfdata_format == 'centreon'):		# centreon
+	perfdata_format = ","
+
+# Get the nextcloud version...
+# [output]
 if options.check == 'system':
 	xml_system = xml_root.find('data').find('nextcloud').find('system')
 
@@ -169,6 +176,7 @@ if options.check == 'system':
 	sys.exit(0)
 
 # Get informations about the storage
+# [output + performance data]
 if options.check == 'storage':
 	xml_storage = xml_root.find('data').find('nextcloud').find('storage')
 
@@ -179,10 +187,11 @@ if options.check == 'storage':
 	xml_storage_storages_home = int(xml_storage.find('num_storages_home').text)
 	xml_storage_storages_other = int(xml_storage.find('num_storages_other').text)
 
-	print 'OK - Users: {0}, files: {1}, storages: {2}, storages local: {3}, storages home: {4}, storages other: {5} | users={0}, files={1}, storages={2}, storages_local={3}, storages_home={4}, storage_other={5}'.format(xml_storage_users, xml_storage_files, xml_storage_storages, xml_storage_storages_local, xml_storage_storages_home, xml_storage_storages_other)
+	print 'OK - Users: {0}, files: {1}, storages: {2}, storages local: {3}, storages home: {4}, storages other: {5} | users={1}{0} files={2}{0} storages={3}{0} storages_local={4}{0} storages_home={5}{0} storage_other={6}'.format(perfdata_format, xml_storage_users, xml_storage_files, xml_storage_storages, xml_storage_storages_local, xml_storage_storages_home, xml_storage_storages_other)
 	sys.exit(0)
 
 # Get informations about the shares
+# [output + performance data]
 if options.check == 'shares':
 	xml_shares = xml_root.find('data').find('nextcloud').find('shares')
 
@@ -194,10 +203,11 @@ if options.check == 'shares':
 	xml_shares_fed_shares_sent = int(xml_shares.find('num_fed_shares_sent').text)
 	xml_shares_fed_shares_received = int(xml_shares.find('num_fed_shares_received').text)
 
-	print 'OK - Shares: {0}, shares user: {1}, shares groups: {2}, shares link: {3}, shares link no password: {4}, shares federation sent: {5}, shares federation received: {6} | shares={0}, shares_user={1}, shares_groups={2}, shares_link={3}, shares_link_no_password={4}, federation_shares_sent={5}, federation_shares_received={6}'.format(xml_shares_shares, xml_shares_shares_user, xml_shares_shares_groups, xml_shares_shares_link, xml_shares_shares_link_no_password, xml_shares_fed_shares_sent, xml_shares_fed_shares_received)
+	print 'OK - Shares: {0}, shares user: {1}, shares groups: {2}, shares link: {3}, shares link no password: {4}, shares federation sent: {5}, shares federation received: {6} | shares={1}{0} shares_user={2}{0} shares_groups={3}{0} shares_link={4}{0} shares_link_no_password={5}{0} federation_shares_sent={6}{0} federation_shares_received={7}'.format(perfdata_format, xml_shares_shares, xml_shares_shares_user, xml_shares_shares_groups, xml_shares_shares_link, xml_shares_shares_link_no_password, xml_shares_fed_shares_sent, xml_shares_fed_shares_received)
 	sys.exit(0)
 
 # Get informations about the webserver
+# [output]
 if options.check == 'webserver':
 	xml_webserver = str(xml_root.find('data').find('server').find('webserver').text)
 
@@ -205,6 +215,7 @@ if options.check == 'webserver':
 	sys.exit(0)
 
 # Get informations about php
+# [output]
 if options.check == 'php':
 	xml_php = xml_root.find('data').find('server').find('php')
 
@@ -217,6 +228,7 @@ if options.check == 'php':
 	sys.exit(0)
 
 # Get informations about the database
+# [output + performance data]
 if options.check == 'database':
 	xml_database = xml_root.find('data').find('server').find('database')
 
@@ -228,6 +240,7 @@ if options.check == 'database':
 	sys.exit(0)
 
 # Check the active users
+# [output + performance data]
 if options.check == 'activeUsers':
 	xml_activeUsers = xml_root.find('data').find('activeUsers')
 
@@ -235,7 +248,7 @@ if options.check == 'activeUsers':
 	xml_activeUsers_last1hour = int(xml_activeUsers.find('last1hour').text)
 	xml_activeUsers_last24hours = int(xml_activeUsers.find('last24hours').text)
 
-	print 'OK - Last 5 minutes: {0} user(s), last 1 hour: {1} user(s), last 24 hour: {2} user(s) | users_last_5_minutes={0}, users_last_1_hour={1}, users_last_24_hours={2}'.format(xml_activeUsers_last5minutes, xml_activeUsers_last1hour, xml_activeUsers_last24hours)
+	print 'OK - Last 5 minutes: {0} user(s), last 1 hour: {1} user(s), last 24 hour: {2} user(s) | users_last_5_minutes={1}{0} users_last_1_hour={2}{0} users_last_24_hours={3}'.format(perfdata_format, xml_activeUsers_last5minutes, xml_activeUsers_last1hour, xml_activeUsers_last24hours)
 	sys.exit(0)
 
 if options.check == 'uploadFilesize':
