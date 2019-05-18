@@ -11,8 +11,8 @@
 ### Changelog ###
 #
 # ~~ Version 1.2 ~~
-# - Parameter "--ignore-ssl" added. (Note: If you use an ip address as hostname... you need to add the ip address as 
-#   trusted domain in the config.php)
+# - Parameter "--ignore-sslcert" added. (Note: If you use an ip address as hostname... you need to add the ip 
+# address as trusted domain in the config.php)
 # - Parameter "--perfdata-format" added [centreon|nagios] (default="centreon")
 #
 #################
@@ -51,7 +51,7 @@ parser.add_option('--perfdata-format', dest='perfdata_format', default='centreon
 parser.add_option('--upload-filesize', dest='upload_filesize', default='512.0MiB', help='Filesize in MiB, GiB without spaces (default="512.0GiB")')
 parser.add_option('--protocol', dest='protocol', choices=['https', 'http'], default='https', help='Protocol you want to use [http|https] (default="https")')
 parser.add_option('--ignore-proxy', dest='ignore_proxy', default=False, action='store_true', help='Ignore any configured proxy server on this system for this request (default="false")')
-parser.add_option('--ignore-ssl', dest='ignore_ssl', default=False, action='store_true', help='Ignore ssl certificate (default="false")')
+parser.add_option('--ignore-sslcert', dest='ignore_sslcert', default=False, action='store_true', help='Ignore ssl certificate (default="false")')
 parser.add_option('--api-url', dest='api_url', type='string', default='/ocs/v2.php/apps/serverinfo/api/v1/info', help='Url of the api (default="/ocs/v2.php/apps/serverinfo/api/v1/info")')
 
 (options, args) = parser.parse_args()
@@ -109,7 +109,7 @@ try:
 	# SSL/TLS certificate validation (see: https://stackoverflow.com/questions/19268548/python-ignore-certificate-validation-urllib2)
 	ctx = ssl.create_default_context()
 
-	if(options.ignore_ssl):
+	if(options.ignore_sslcert):
 		ctx.check_hostname = False
 		ctx.verify_mode = ssl.CERT_NONE
 
