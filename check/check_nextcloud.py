@@ -38,6 +38,61 @@ def calc_size_nagios(num, suffix='B'):
 
 	return "%.1f%s%s" % (num, 'Y', suffix)
 
+def convert_size_to_bytes(size_str):
+    """Convert human filesizes to bytes.
+
+    Special cases:
+     - singular units, e.g., "1 byte"
+     - byte vs b
+     - yottabytes, zetabytes, etc.
+     - with & without spaces between & around units.
+     - floats ("5.2 mb")
+
+    To reverse this, see hurry.filesize or the Django filesizeformat template
+    filter.
+
+    :param size_str: A human-readable string representing a file size, e.g.,
+    "22 megabytes".
+    :return: The number of bytes represented by the string.
+    """
+    multipliers = {
+        'kilobyte':  1024,
+        'megabyte':  1024 ** 2,
+        'gigabyte':  1024 ** 3,
+        'terabyte':  1024 ** 4,
+        'petabyte':  1024 ** 5,
+        'exabyte':   1024 ** 6,
+        'zetabyte':  1024 ** 7,
+        'yottabyte': 1024 ** 8,
+        'kb': 1024,
+        'mb': 1024**2,
+        'gb': 1024**3,
+        'tb': 1024**4,
+        'pb': 1024**5,
+        'eb': 1024**6,
+        'zb': 1024**7,
+        'yb': 1024**8,
+        'kib': 1024,
+        'mib': 1024**2,
+        'gib': 1024**3,
+        'tib': 1024**4,
+        'pib': 1024**5,
+        'eib': 1024**6,
+        'zib': 1024**7,
+        'yib': 1024**8,
+    }
+
+    for suffix in multipliers:
+        size_str = size_str.lower().strip().strip('s')
+        if size_str.lower().endswith(suffix):
+            return int(float(size_str[0:-len(suffix)]) * multipliers[suffix])
+    else:
+        if size_str.endswith('b'):
+            size_str = size_str[0:-1]
+        elif size_str.endswith('byte'):
+            size_str = size_str[0:-4]
+    return int(size_str)
+
 # Command line parser
 from optparse import OptionParser
 
@@ -48,7 +103,7 @@ parser.add_option('-p', '--password', dest='password', type='string', help='Pass
 parser.add_option('-H', '--hostname', dest='hostname', type='string', help='Nextcloud server address (make sure that the address is a trusted domain in the config.php)')
 parser.add_option('-c', '--check', dest='check', choices=['system','storage','shares','webserver','php','database','activeUsers','uploadFilesize'], help='The thing you want to check [system|storage|shares|webserver|php|database|activeUsers|uploadFilesize]')
 parser.add_option('--perfdata-format', dest='perfdata_format', default='centreon', choices=['centreon','nagios'], help='Format for the performance data [centreon|nagios] (default="centreon")')
-parser.add_option('--upload-filesize', dest='upload_filesize', default='512.0MiB', help='Filesize in MiB, GiB without spaces (default="512.0GiB")')
+parser.add_option('--upload-filesize', dest='upload_filesize', default='512.0MiB', help='Filesize in MiB, GiB without spaces (default="512.0MiB")')
 parser.add_option('--protocol', dest='protocol', choices=['https', 'http'], default='https', help='Protocol you want to use [http|https] (default="https")')
 parser.add_option('--ignore-proxy', dest='ignore_proxy', default=False, action='store_true', help='Ignore any configured proxy server on this system for this request (default="false")')
 parser.add_option('--ignore-sslcert', dest='ignore_sslcert', default=False, action='store_true', help='Ignore ssl certificate (default="false")')
@@ -260,8 +315,8 @@ if options.check == 'uploadFilesize':
 	# Convert
 	upload_max_filesize = calc_size_suffix(xml_php_upload_max_filesize)
 
-	if options.upload_filesize == upload_max_filesize:
-		print 'OK - Upload max filesize: {0}'.format(upload_max_filesize)
+	if convert_size_to_bytes(upload_max_filesize) >= convert_size_to_bytes(options.upload_filesize):
+		print 'OK - Upload max filesize: {0} >= {1}'.format(upload_max_filesize, options.upload_filesize)
 		sys.exit(0)		
 	else:
 		print 'CRITICAL - Upload max filesize is set to {0}, but should be {1}'.format(upload_max_filesize, options.upload_filesize)
