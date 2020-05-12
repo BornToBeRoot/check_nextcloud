@@ -5,7 +5,7 @@ Nagios/Centreon plugin for nextcloud serverinfo API (https://github.com/nextclou
 ## Syntax / Help
 
 ```
-./check_nextcloud.py -u username -p password -H cloud.example.com -c [system|storage|shares|webserver|php|database|users]
+./check_nextcloud.py -u username -p password -H cloud.example.com -c [system|storage|shares|webserver|php|database|users|apps]
 
 
 Options:
