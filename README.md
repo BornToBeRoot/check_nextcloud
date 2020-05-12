@@ -21,7 +21,7 @@ Options:
                         is a trusted domain in the config.php)
   -c CHECK, --check=CHECK
                         The thing you want to check
-                        [system|storage|shares|webserver|php|database|activeUsers|uploadFilesize]
+                        [system|storage|shares|webserver|php|database|activeUsers|uploadFilesize|apps]
   --upload-filesize     Filesize in MiB, GiB without spaces (default="512.0GiB")
   --protocol=PROTOCOL   Protocol you want to use [http|https]
                         (default="https")
