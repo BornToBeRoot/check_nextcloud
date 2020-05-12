@@ -15,7 +15,7 @@
 # address as trusted domain in the config.php)
 # - Parameter "--perfdata-format" added [centreon|nagios] (default="centreon")
 #  ~~ Version 1.3 ~~
-# - Check for app updates added (Thanks @Cormoran96)
+# - Check for app updates added (Thanks @thinkl33t)
 # 
 #################
 
