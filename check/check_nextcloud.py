@@ -11,10 +11,12 @@
 ### Changelog ###
 #
 # ~~ Version 1.2 ~~
-# - Parameter "--ignore-sslcert" added. (Note: If you use an ip address as hostname... you need to add the ip 
+# - Parameter "--ignore-sslcert" added. (Note: If you use an ip address as hostname... you need to add the ip
 # address as trusted domain in the config.php)
 # - Parameter "--perfdata-format" added [centreon|nagios] (default="centreon")
-#
+#  ~~ Version 1.3 ~~
+# - Check for app updates added (Thanks @thinkl33t)
+# 
 #################
 
 import urllib2, base64, xml.etree.ElementTree, sys, traceback, ssl, re
@@ -41,12 +43,12 @@ def calc_size_nagios(num, suffix='B'):
 # Command line parser
 from optparse import OptionParser
 
-parser = OptionParser(usage='%prog -u username -p password -H cloud.example.com -c [system|storage|shares|webserver|php|database|activeUsers|uploadFilesize]')
+parser = OptionParser(usage='%prog -u username -p password -H cloud.example.com -c [system|storage|shares|webserver|php|database|activeUsers|uploadFilesize|apps]')
 parser.add_option('-v', '--version', dest='version', default=False, action='store_true', help='Print the version of this script')
 parser.add_option('-u', '--username', dest='username', type='string', help='Username of the user with administrative permissions on the nextcloud server')
 parser.add_option('-p', '--password', dest='password', type='string', help='Password of the user')
 parser.add_option('-H', '--hostname', dest='hostname', type='string', help='Nextcloud server address (make sure that the address is a trusted domain in the config.php)')
-parser.add_option('-c', '--check', dest='check', choices=['system','storage','shares','webserver','php','database','activeUsers','uploadFilesize'], help='The thing you want to check [system|storage|shares|webserver|php|database|activeUsers|uploadFilesize]')
+parser.add_option('-c', '--check', dest='check', choices=['system','storage','shares','webserver','php','database','activeUsers','uploadFilesize','apps'], help='The thing you want to check [system|storage|shares|webserver|php|database|activeUsers|uploadFilesize|apps]')
 parser.add_option('--perfdata-format', dest='perfdata_format', default='centreon', choices=['centreon','nagios'], help='Format for the performance data [centreon|nagios] (default="centreon")')
 parser.add_option('--upload-filesize', dest='upload_filesize', default='512.0MiB', help='Filesize in MiB, GiB without spaces (default="512.0GiB")')
 parser.add_option('--protocol', dest='protocol', choices=['https', 'http'], default='https', help='Protocol you want to use [http|https] (default="https")')
@@ -58,7 +60,7 @@ parser.add_option('--api-url', dest='api_url', type='string', default='/ocs/v2.p
 
 # Print the version of this script
 if options.version:
-	print 'Version 1.2'
+	print 'Version 1.3'
 	sys.exit(0)
 
 # Validate the user input...
@@ -105,7 +107,7 @@ try:
 	# Add the authentication and api request header
 	request.add_header('Authorization', "Basic %s" % credential)
 	request.add_header('OCS-APIRequest','true')
-	
+
 	# SSL/TLS certificate validation (see: https://stackoverflow.com/questions/19268548/python-ignore-certificate-validation-urllib2)
 	ctx = ssl.create_default_context()
 
@@ -170,7 +172,7 @@ if(options.perfdata_format == 'centreon'):		# centreon
 if options.check == 'system':
 	xml_system = xml_root.find('data').find('nextcloud').find('system')
 
-	xml_system_version = str(xml_system.find('version').text) 
+	xml_system_version = str(xml_system.find('version').text)
 
 	print 'OK - Nextcloud version: {0}'.format(xml_system_version)
 	sys.exit(0)
@@ -253,7 +255,7 @@ if options.check == 'activeUsers':
 
 if options.check == 'uploadFilesize':
 	xml_php = xml_root.find('data').find('server').find('php')
-	
+
 	# Get upload max filesize
 	xml_php_upload_max_filesize = int(xml_php.find('upload_max_filesize').text)
 
@@ -262,7 +264,25 @@ if options.check == 'uploadFilesize':
 
 	if options.upload_filesize == upload_max_filesize:
 		print 'OK - Upload max filesize: {0}'.format(upload_max_filesize)
-		sys.exit(0)		
+		sys.exit(0)
 	else:
 		print 'CRITICAL - Upload max filesize is set to {0}, but should be {1}'.format(upload_max_filesize, options.upload_filesize)
 		sys.exit(2)
+
+# Get informations about any app updates
+# [output]
+if options.check == 'apps':
+	xml_apps = xml_root.find('data').find('nextcloud').find('system').find('apps')
+
+	xml_apps_num_updates_available = int(xml_apps.find('num_updates_available').text)
+
+	if xml_apps_num_updates_available == 0:
+		print 'OK - No apps requiring update'
+		sys.exit(0)
+	else:
+		xml_apps_updates = xml_apps.find('app_updates')
+		xml_apps_list = []
+		for app in xml_apps_updates:
+			xml_apps_list.append('{0}->{1}'.format(app.tag, app.text))
+		print 'WARNING - {0} apps require update: {1}'.format(xml_apps_num_updates_available, ' ,'.join(xml_apps_list))
+		sys.exit(1)
