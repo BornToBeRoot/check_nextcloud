@@ -15,7 +15,7 @@
 # address as trusted domain in the config.php)
 # - Parameter "--perfdata-format" added [centreon|nagios] (default="centreon")
 #  ~~ Version 1.3 ~~
-# -
+# - Check for app updates added (Thanks @Cormoran96)
 # 
 #################
 
@@ -60,7 +60,7 @@ parser.add_option('--api-url', dest='api_url', type='string', default='/ocs/v2.p
 
 # Print the version of this script
 if options.version:
-	print 'Version 1.2'
+	print 'Version 1.3'
 	sys.exit(0)
 
 # Validate the user input...
