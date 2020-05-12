@@ -5,7 +5,7 @@ Nagios/Centreon plugin for nextcloud serverinfo API (https://github.com/nextclou
 ## Syntax / Help
 
 ```
-./check_nextcloud.py -u username -p password -H cloud.example.com -c [system|storage|shares|webserver|php|database|users]
+./check_nextcloud.py -u username -p password -H cloud.example.com -c [system|storage|shares|webserver|php|database|users|apps]
 
 
 Options:
@@ -21,7 +21,7 @@ Options:
                         is a trusted domain in the config.php)
   -c CHECK, --check=CHECK
                         The thing you want to check
-                        [system|storage|shares|webserver|php|database|activeUsers|uploadFilesize]
+                        [system|storage|shares|webserver|php|database|activeUsers|uploadFilesize|apps]
   --upload-filesize     Filesize in MiB, GiB without spaces (default="512.0GiB")
   --protocol=PROTOCOL   Protocol you want to use [http|https]
                         (default="https")
