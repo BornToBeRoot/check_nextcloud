@@ -14,7 +14,9 @@
 # - Parameter "--ignore-sslcert" added. (Note: If you use an ip address as hostname... you need to add the ip
 # address as trusted domain in the config.php)
 # - Parameter "--perfdata-format" added [centreon|nagios] (default="centreon")
-#
+#  ~~ Version 1.3 ~~
+# -
+# 
 #################
 
 import urllib2, base64, xml.etree.ElementTree, sys, traceback, ssl, re
@@ -275,12 +277,12 @@ if options.check == 'apps':
 	xml_apps_num_updates_available = int(xml_apps.find('num_updates_available').text)
 
 	if xml_apps_num_updates_available == 0:
-		print 'OK - No apps requiring update | app_updates=0'
+		print 'OK - No apps requiring update'
 		sys.exit(0)
 	else:
 		xml_apps_updates = xml_apps.find('app_updates')
 		xml_apps_list = []
 		for app in xml_apps_updates:
-			xml_apps_list.append('{}->{}'.format(app.tag, app.text))
-		print 'WARNING - {} apps require update: {} | app_updates=0'.format(xml_apps_num_updates_available, ' '.join(xml_apps_list), xml_apps_num_updates_available)
+			xml_apps_list.append('{0}->{1}'.format(app.tag, app.text))
+		print 'WARNING - {0} apps require update: {1}'.format(xml_apps_num_updates_available, ' ,'.join(xml_apps_list))
 		sys.exit(1)
