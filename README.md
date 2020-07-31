@@ -1,4 +1,4 @@
-# check_nextcloud
+# Nagios/Centron check | Nextcloud serverinfo
 
 Nagios/Centreon plugin for nextcloud serverinfo API (https://github.com/nextcloud/serverinfo)
 
