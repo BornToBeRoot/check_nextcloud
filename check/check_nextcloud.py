@@ -189,7 +189,7 @@ if options.check == 'storage':
 	xml_storage_storages_home = int(xml_storage.find('num_storages_home').text)
 	xml_storage_storages_other = int(xml_storage.find('num_storages_other').text)
 
-	print 'OK - Users: {0}, files: {1}, storages: {2}, storages local: {3}, storages home: {4}, storages other: {5} | users={1}{0} files={2}{0} storages={3}{0} storages_local={4}{0} storages_home={5}{0} storage_other={6}'.format(perfdata_format, xml_storage_users, xml_storage_files, xml_storage_storages, xml_storage_storages_local, xml_storage_storages_home, xml_storage_storages_other)
+	print 'OK - Users: {1}, files: {2}, storages: {3}, storages local: {4}, storages home: {5}, storages other: {6} | users={1}{0} files={2}{0} storages={3}{0} storages_local={4}{0} storages_home={5}{0} storage_other={6}'.format(perfdata_format, xml_storage_users, xml_storage_files, xml_storage_storages, xml_storage_storages_local, xml_storage_storages_home, xml_storage_storages_other)
 	sys.exit(0)
 
 # Get informations about the shares
@@ -205,7 +205,7 @@ if options.check == 'shares':
 	xml_shares_fed_shares_sent = int(xml_shares.find('num_fed_shares_sent').text)
 	xml_shares_fed_shares_received = int(xml_shares.find('num_fed_shares_received').text)
 
-	print 'OK - Shares: {0}, shares user: {1}, shares groups: {2}, shares link: {3}, shares link no password: {4}, shares federation sent: {5}, shares federation received: {6} | shares={1}{0} shares_user={2}{0} shares_groups={3}{0} shares_link={4}{0} shares_link_no_password={5}{0} federation_shares_sent={6}{0} federation_shares_received={7}'.format(perfdata_format, xml_shares_shares, xml_shares_shares_user, xml_shares_shares_groups, xml_shares_shares_link, xml_shares_shares_link_no_password, xml_shares_fed_shares_sent, xml_shares_fed_shares_received)
+	print 'OK - Shares: {1}, shares user: {2}, shares groups: {3}, shares link: {4}, shares link no password: {5}, shares federation sent: {6}, shares federation received: {7} | shares={1}{0} shares_user={2}{0} shares_groups={3}{0} shares_link={4}{0} shares_link_no_password={5}{0} federation_shares_sent={6}{0} federation_shares_received={7}'.format(perfdata_format, xml_shares_shares, xml_shares_shares_user, xml_shares_shares_groups, xml_shares_shares_link, xml_shares_shares_link_no_password, xml_shares_fed_shares_sent, xml_shares_fed_shares_received)
 	sys.exit(0)
 
 # Get informations about the webserver
@@ -250,7 +250,7 @@ if options.check == 'activeUsers':
 	xml_activeUsers_last1hour = int(xml_activeUsers.find('last1hour').text)
 	xml_activeUsers_last24hours = int(xml_activeUsers.find('last24hours').text)
 
-	print 'OK - Last 5 minutes: {0} user(s), last 1 hour: {1} user(s), last 24 hour: {2} user(s) | users_last_5_minutes={1}{0} users_last_1_hour={2}{0} users_last_24_hours={3}'.format(perfdata_format, xml_activeUsers_last5minutes, xml_activeUsers_last1hour, xml_activeUsers_last24hours)
+	print 'OK - Last 5 minutes: {1} user(s), last 1 hour: {2} user(s), last 24 hour: {3} user(s) | users_last_5_minutes={1}{0} users_last_1_hour={2}{0} users_last_24_hours={3}'.format(perfdata_format, xml_activeUsers_last5minutes, xml_activeUsers_last1hour, xml_activeUsers_last24hours)
 	sys.exit(0)
 
 if options.check == 'uploadFilesize':
