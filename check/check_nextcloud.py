@@ -101,8 +101,7 @@ else:
 url = '{0}://{1}{2}'.format(options.protocol, hostname, api_url)
 
 # Encode credentials as base64
-if options.username and options.password:
-	credential = base64.b64encode(options.username + ':' + options.password)
+credential = base64.b64encode(bytes('%s:%s' % (options.username, options.password), 'ascii'))
 
 try:
 	# Create the request
@@ -113,8 +112,8 @@ try:
                 request.add_header('NC-Token',"%s" % options.nc_token)
 	else:
 	# Add the authentication and api request header
-		request.add_header('Authorization', "Basic %s" % credential)
-		request.add_header('OCS-APIRequest','true')
+	request.add_header("Authorization", "Basic %s" % credential.decode('utf-8'))
+	request.add_header('OCS-APIRequest','true')
 
 	# SSL/TLS certificate validation (see: https://stackoverflow.com/questions/19268548/python-ignore-certificate-validation-urllib2)
 	ctx = ssl.create_default_context()
