@@ -16,6 +16,8 @@
 # - Parameter "--perfdata-format" added [centreon|nagios] (default="centreon")
 #  ~~ Version 1.3 ~~
 # - Check for app updates added (Thanks @thinkl33t)
+#  ~~ Version 1.4 ~~
+# - Use NC-Token instead of Username/Password
 # 
 #################
 
@@ -55,12 +57,13 @@ parser.add_option('--protocol', dest='protocol', choices=['https', 'http'], defa
 parser.add_option('--ignore-proxy', dest='ignore_proxy', default=False, action='store_true', help='Ignore any configured proxy server on this system for this request (default="false")')
 parser.add_option('--ignore-sslcert', dest='ignore_sslcert', default=False, action='store_true', help='Ignore ssl certificate (default="false")')
 parser.add_option('--api-url', dest='api_url', type='string', default='/ocs/v2.php/apps/serverinfo/api/v1/info', help='Url of the api (default="/ocs/v2.php/apps/serverinfo/api/v1/info")')
+parser.add_option('--nc-token', dest='nc_token', type='string', help='Check System in Nextcloud settings on how to generate; replaces username/password')
 
 (options, args) = parser.parse_args()
 
 # Print the version of this script
 if options.version:
-	print 'Version 1.3'
+	print 'Version 1.4'
 	sys.exit(0)
 
 # Validate the user input...
@@ -68,12 +71,12 @@ if not options.username and not options.password and not options.hostname and no
 	parser.print_help()
 	sys.exit(3)
 
-if not options.username:
-	parser.error('Username is required, use parameter [-u|--username].')
+if not options.username and not options.nc_token:
+        parser.error('Username or nc-token is required, use parameter [-u|--username] or [--nc-token].')
 	sys.exit(3)
 
-if not options.password:
-	parser.error('Password is required, use parameter [-p|--password].')
+if not options.password and not options.nc_token:
+        parser.error('Password or nc-token is required, use parameter [-p|--password] or [--nc-token].')
 	sys.exit(3)
 
 if not options.hostname:
@@ -98,15 +101,20 @@ else:
 url = '{0}://{1}{2}'.format(options.protocol, hostname, api_url)
 
 # Encode credentials as base64
-credential = base64.b64encode(options.username + ':' + options.password)
+if options.username and options.password:
+	credential = base64.b64encode(options.username + ':' + options.password)
 
 try:
 	# Create the request
 	request = urllib2.Request(url)
 
+	# Add the token header
+        if options.nc_token:
+                request.add_header('NC-Token',"%s" % options.nc_token)
+	else:
 	# Add the authentication and api request header
-	request.add_header('Authorization', "Basic %s" % credential)
-	request.add_header('OCS-APIRequest','true')
+		request.add_header('Authorization', "Basic %s" % credential)
+		request.add_header('OCS-APIRequest','true')
 
 	# SSL/TLS certificate validation (see: https://stackoverflow.com/questions/19268548/python-ignore-certificate-validation-urllib2)
 	ctx = ssl.create_default_context()
