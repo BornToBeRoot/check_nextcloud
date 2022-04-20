@@ -72,11 +72,11 @@ if not options.username and not options.password and not options.hostname and no
 	sys.exit(3)
 
 if not options.username and not options.nc_token:
-        parser.error('Username or nc-token is required, use parameter [-u|--username] or [--nc-token].')
+	parser.error('Username or nc-token is required, use parameter [-u|--username] or [--nc-token].')
 	sys.exit(3)
 
 if not options.password and not options.nc_token:
-        parser.error('Password or nc-token is required, use parameter [-p|--password] or [--nc-token].')
+	parser.error('Password or nc-token is required, use parameter [-p|--password] or [--nc-token].')
 	sys.exit(3)
 
 if not options.hostname:
@@ -108,12 +108,12 @@ try:
 	request = urllib.request.Request(url)
 
 	# Add the token header
-        if options.nc_token:
-                request.add_header('NC-Token',"%s" % options.nc_token)
+	if options.nc_token:
+ 		request.add_header('NC-Token',"%s" % options.nc_token)
 	else:
 	# Add the authentication and api request header
-	request.add_header("Authorization", "Basic %s" % credential.decode('utf-8'))
-	request.add_header('OCS-APIRequest','true')
+		request.add_header("Authorization", "Basic %s" % credential.decode('utf-8'))
+		request.add_header('OCS-APIRequest','true')
 
 	# SSL/TLS certificate validation (see: https://stackoverflow.com/questions/19268548/python-ignore-certificate-validation-urllib2)
 	ctx = ssl.create_default_context()
