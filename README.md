@@ -16,6 +16,8 @@ Options:
                         on the nextcloud server
   -p PASSWORD, --password=PASSWORD
                         Password of the user
+  -t TOKEN, --nc-token=TOKEN
+                        NC-Token for the Serverinfo API
   -H HOSTNAME, --hostname=HOSTNAME
                         Nextcloud server address (make sure that the address
                         is a trusted domain in the config.php)

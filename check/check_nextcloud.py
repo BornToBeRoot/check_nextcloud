@@ -17,7 +17,7 @@
 #  ~~ Version 1.3 ~~
 # - Check for app updates added (Thanks @thinkl33t)
 #  ~~ Version 1.4 ~~
-# - Use NC-Token instead of Username/Password
+# - Parameter "--nc-token" added (Thanks @sblatt)
 # 
 #################
 
@@ -49,15 +49,15 @@ parser = OptionParser(usage='%prog -u username -p password -H cloud.example.com 
 parser.add_option('-v', '--version', dest='version', default=False, action='store_true', help='Print the version of this script')
 parser.add_option('-u', '--username', dest='username', type='string', help='Username of the user with administrative permissions on the nextcloud server')
 parser.add_option('-p', '--password', dest='password', type='string', help='Password of the user')
+parser.add_option('-t', '--nc-token', dest='nc_token', type='string', help='Token to access the nextcloud serverinfo api. You can generate the token with "occ config:app:set serverinfo token --value yourtoken"; replaces username/password')
 parser.add_option('-H', '--hostname', dest='hostname', type='string', help='Nextcloud server address (make sure that the address is a trusted domain in the config.php)')
 parser.add_option('-c', '--check', dest='check', choices=['system','storage','shares','webserver','php','database','activeUsers','uploadFilesize','apps'], help='The thing you want to check [system|storage|shares|webserver|php|database|activeUsers|uploadFilesize|apps]')
 parser.add_option('--perfdata-format', dest='perfdata_format', default='centreon', choices=['centreon','nagios'], help='Format for the performance data [centreon|nagios] (default="centreon")')
-parser.add_option('--upload-filesize', dest='upload_filesize', default='512.0MiB', help='Filesize in MiB, GiB without spaces (default="512.0GiB")')
+parser.add_option('--upload-filesize', dest='upload_filesize', default='512.0MiB', help='Filesize in MiB, GiB without spaces (default="512.0MiB")')
 parser.add_option('--protocol', dest='protocol', choices=['https', 'http'], default='https', help='Protocol you want to use [http|https] (default="https")')
 parser.add_option('--ignore-proxy', dest='ignore_proxy', default=False, action='store_true', help='Ignore any configured proxy server on this system for this request (default="false")')
 parser.add_option('--ignore-sslcert', dest='ignore_sslcert', default=False, action='store_true', help='Ignore ssl certificate (default="false")')
 parser.add_option('--api-url', dest='api_url', type='string', default='/ocs/v2.php/apps/serverinfo/api/v1/info', help='Url of the api (default="/ocs/v2.php/apps/serverinfo/api/v1/info")')
-parser.add_option('--nc-token', dest='nc_token', type='string', help='Check System in Nextcloud settings on how to generate; replaces username/password')
 
 (options, args) = parser.parse_args()
 
