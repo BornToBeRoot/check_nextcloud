@@ -19,7 +19,7 @@
 #  ~~ Version 1.4 ~~
 # - Parameter "--nc-token" added (Thanks @sblatt)
 #  ~~ Version 2.0 ~~ 
-# - Migrated from Python 2.7 to 3
+# - Migrated from Python 2.7 to 3 (Thanks @waja)
 #
 #################
 
