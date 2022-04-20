@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 ###############################################################################################################
-# Language     :  Python (2.7)
+# Language     :  Python 3
 # Filename     :  check_nextcloud.py
 # Autor        :  https://github.com/BornToBeRoot
 # Description  :  Nagios/Centreon plugin for nextcloud serverinfo API (https://github.com/nextcloud/serverinfo)
@@ -18,7 +18,9 @@
 # - Check for app updates added (Thanks @thinkl33t)
 #  ~~ Version 1.4 ~~
 # - Parameter "--nc-token" added (Thanks @sblatt)
-# 
+#  ~~ Version 2.0 ~~ 
+# - Migrated from Python 2.7 to 3
+#
 #################
 
 import urllib.request, urllib.error, urllib.parse, base64, xml.etree.ElementTree, sys, traceback, ssl, re
@@ -63,7 +65,7 @@ parser.add_option('--api-url', dest='api_url', type='string', default='/ocs/v2.p
 
 # Print the version of this script
 if options.version:
-	print('Version 1.4')
+	print('Version 2.0')
 	sys.exit(0)
 
 # Validate the user input...
