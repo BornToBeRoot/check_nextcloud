@@ -102,6 +102,7 @@ object CheckCommand "check_nextcloud" {
     }
     "--api-url" = {
       value = "$nextcloud_api_url$"
+      set_if = "$nextcloud_api_url$"
       description = "Api-url"
     }
     "--check" = {
