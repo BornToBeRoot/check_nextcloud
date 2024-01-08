@@ -80,3 +80,77 @@ OK - Upload max filesize: 2.0GiB
 CRITICAL - Upload max filesize is set to 512.0MiB, but should be 2.0GiB
 
 ```
+
+
+
+## Icinga config example
+
+
+Adjust the command path to your local situation.
+
+```
+object CheckCommand "check_nextcloud" {
+  command = [ "/var/lib/nagios/src/check_nextcloud/check/check_nextcloud.py" ]
+  arguments = {
+    "--nc-token" = {
+      value = "$nextcloud_token$"
+      description = "NC-Token for the Serverinfo API"
+    }
+    "--hostname" = {
+      value = "$nextcloud_hostname$"
+      description = "Hostname"
+    }
+    "--api-url" = {
+      value = "$nextcloud_api_url$"
+      set_if = "$nextcloud_api_url$"
+      description = "Api-url"
+    }
+    "--check" = {
+      value = "$nextcloud_check$"
+      description = "Which check to run"
+    }
+    "--perfdata-format" = {
+      value = "nagios"
+      description = "The perfdata format we like"
+    }
+  }
+}
+```
+
+```
+apply Service for (checkname in ["system","storage","shares","webserver","php","database","activeUsers","uploadFilesize","apps"]) {
+  import "generic-service"
+  name = "check-nextcloud-" + checkname
+  check_interval = 30m
+  retry_interval = 10m
+  display_name = "Nextcloud monitor " + checkname
+  vars.notification_interval = 1d
+
+  vars.nextcloud_check = checkname
+  vars.nextcloud_hostname = host.vars.nextcloud_hostname
+  vars.nextcloud_token = host.vars.nextcloud_token
+  vars.nextcloud_api_url = host.vars.nextcloud_api_url
+  vars.notification["mail"] = {  }
+  check_command = "check_nextcloud"
+
+  assign where (host.address || host.address6) && host.vars.nextcloud_token
+}
+```
+
+```
+object Host "server42.example.com" {
+
+  display_name = "My Nextcloud server"
+  address = "<IP>"
+
+  ...
+
+  # The token can be set with: occ config:app:set serverinfo token --value yourtoken
+  vars.nextcloud_token = "XXX"
+  vars.nextcloud_hostname = "nextcloud.example.com"
+
+  # Optional if you e.g. use a subdirectory.
+  vars.nextcloud_api_url = "/subdir/ocs/v2.php/apps/serverinfo/api/v1/info"
+}
+
+```
