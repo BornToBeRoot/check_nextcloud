@@ -59,7 +59,7 @@ parser.add_option('--upload-filesize', dest='upload_filesize', default='512.0MiB
 parser.add_option('--protocol', dest='protocol', choices=['https', 'http'], default='https', help='Protocol you want to use [http|https] (default="https")')
 parser.add_option('--ignore-proxy', dest='ignore_proxy', default=False, action='store_true', help='Ignore any configured proxy server on this system for this request (default="false")')
 parser.add_option('--ignore-sslcert', dest='ignore_sslcert', default=False, action='store_true', help='Ignore ssl certificate (default="false")')
-parser.add_option('--api-url', dest='api_url', type='string', default='/ocs/v2.php/apps/serverinfo/api/v1/info', help='Url of the api (default="/ocs/v2.php/apps/serverinfo/api/v1/info")')
+parser.add_option('--api-url', dest='api_url', type='string', default='/ocs/v2.php/apps/serverinfo/api/v1/info?skipApps=false&skipUpdate=false', help='Url of the api (default="/ocs/v2.php/apps/serverinfo/api/v1/info?skipApps=false&skipUpdate=false")')
 
 (options, args) = parser.parse_args()
 
