@@ -283,7 +283,10 @@ if options.check == 'uploadFilesize':
 if options.check == 'apps':
 	xml_apps = xml_root.find('data').find('nextcloud').find('system').find('apps')
 
-	xml_apps_num_updates_available = int(xml_apps.find('num_updates_available').text)
+	if xml_apps is not None:
+		xml_apps_num_updates_available = int(xml_apps.find('num_updates_available').text)
+	else:
+		xml_apps_num_updates_available = 0
 
 	if xml_apps_num_updates_available == 0:
 		print('OK - No apps requiring update')
