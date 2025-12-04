@@ -111,7 +111,7 @@ try:
 
 	# Add the token header
 	if options.nc_token:
- 		request.add_header('NC-Token',"%s" % options.nc_token)
+		request.add_header('NC-Token',"%s" % options.nc_token)
 	else:
 	# Add the authentication and api request header
 		request.add_header("Authorization", "Basic %s" % credential.decode('utf-8'))
