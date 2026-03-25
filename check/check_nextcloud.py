@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/python
 
 ###############################################################################################################
 # Language     :  Python 3
@@ -20,6 +20,9 @@
 # - Parameter "--nc-token" added (Thanks @sblatt)
 #  ~~ Version 2.0 ~~ 
 # - Migrated from Python 2.7 to 3 (Thanks @waja)
+#  ~~ Version 2.1 ~~
+# - Parameter "--context" added for deployments where nexcloud is not in the root of the webserver
+# - Check for Nextcloud core and app updates added ("-c updates")
 #
 #################
 
@@ -47,25 +50,26 @@ def calc_size_nagios(num, suffix='B'):
 # Command line parser
 from optparse import OptionParser
 
-parser = OptionParser(usage='%prog -u username -p password -H cloud.example.com -c [system|storage|shares|webserver|php|database|activeUsers|uploadFilesize|apps]')
+parser = OptionParser(usage='%prog -u username -p password -H cloud.example.com -c [system|storage|shares|webserver|php|database|activeUsers|uploadFilesize|apps|updates]')
 parser.add_option('-v', '--version', dest='version', default=False, action='store_true', help='Print the version of this script')
 parser.add_option('-u', '--username', dest='username', type='string', help='Username of the user with administrative permissions on the nextcloud server')
 parser.add_option('-p', '--password', dest='password', type='string', help='Password of the user')
 parser.add_option('-t', '--nc-token', dest='nc_token', type='string', help='Token to access the nextcloud serverinfo api. You can generate the token with "occ config:app:set serverinfo token --value yourtoken"; replaces username/password')
 parser.add_option('-H', '--hostname', dest='hostname', type='string', help='Nextcloud server address (make sure that the address is a trusted domain in the config.php)')
-parser.add_option('-c', '--check', dest='check', choices=['system','storage','shares','webserver','php','database','activeUsers','uploadFilesize','apps'], help='The thing you want to check [system|storage|shares|webserver|php|database|activeUsers|uploadFilesize|apps]')
+parser.add_option('-c', '--check', dest='check', choices=['system','storage','shares','webserver','php','database','activeUsers','uploadFilesize','apps','updates'], help='The thing you want to check [system|storage|shares|webserver|php|database|activeUsers|uploadFilesize|apps|updates]')
 parser.add_option('--perfdata-format', dest='perfdata_format', default='centreon', choices=['centreon','nagios'], help='Format for the performance data [centreon|nagios] (default="centreon")')
 parser.add_option('--upload-filesize', dest='upload_filesize', default='512.0MiB', help='Filesize in MiB, GiB without spaces (default="512.0MiB")')
 parser.add_option('--protocol', dest='protocol', choices=['https', 'http'], default='https', help='Protocol you want to use [http|https] (default="https")')
 parser.add_option('--ignore-proxy', dest='ignore_proxy', default=False, action='store_true', help='Ignore any configured proxy server on this system for this request (default="false")')
 parser.add_option('--ignore-sslcert', dest='ignore_sslcert', default=False, action='store_true', help='Ignore ssl certificate (default="false")')
 parser.add_option('--api-url', dest='api_url', type='string', default='/ocs/v2.php/apps/serverinfo/api/v1/info?skipApps=false&skipUpdate=false', help='Url of the api (default="/ocs/v2.php/apps/serverinfo/api/v1/info?skipApps=false&skipUpdate=false")')
+parser.add_option('--context', dest='context', type='string', help='Webserver context where Nextcloud is running (for example "/mycloud"). It will be prepended to api-url parameter')
 
 (options, args) = parser.parse_args()
 
 # Print the version of this script
 if options.version:
-	print('Version 2.0')
+	print('Version 2.1')
 	sys.exit(0)
 
 # Validate the user input...
@@ -100,7 +104,10 @@ else:
 	api_url = '/{0}'.format(options.api_url)
 
 # Create the url to access the api
-url = '{0}://{1}{2}'.format(options.protocol, hostname, api_url)
+if options.context:
+	url = '{0}://{1}{2}{3}'.format(options.protocol, hostname, options.context, api_url)
+else:
+	url = '{0}://{1}{2}'.format(options.protocol, hostname, api_url)
 
 # Encode credentials as base64
 credential = base64.b64encode(bytes('%s:%s' % (options.username, options.password), 'ascii'))
@@ -111,7 +118,7 @@ try:
 
 	# Add the token header
 	if options.nc_token:
-		request.add_header('NC-Token',"%s" % options.nc_token)
+ 		request.add_header('NC-Token',"%s" % options.nc_token)
 	else:
 	# Add the authentication and api request header
 		request.add_header("Authorization", "Basic %s" % credential.decode('utf-8'))
@@ -180,6 +187,7 @@ if(options.perfdata_format == 'centreon'):		# centreon
 # [output]
 if options.check == 'system':
 	xml_system = xml_root.find('data').find('nextcloud').find('system')
+	#print(content)
 
 	xml_system_version = str(xml_system.find('version').text)
 
@@ -234,8 +242,9 @@ if options.check == 'php':
 	xml_php_memory_limit = int(xml_php.find('memory_limit').text)
 	xml_php_max_execution_time = str(xml_php.find('max_execution_time').text)
 	xml_php_upload_max_filesize = int(xml_php.find('upload_max_filesize').text)
+	xml_php_opcache_enabled = str(xml_php.find('opcache').find('opcache_enabled').text)
 
-	print('OK - PHP version: {0}, memory limit {1}, max execution time: {2}s, upload max filesize: {3}'.format(xml_php_version, calc_size_suffix(xml_php_memory_limit), xml_php_max_execution_time, calc_size_suffix(xml_php_upload_max_filesize)))
+	print('OK - PHP version: {0}, memory limit {1}, max execution time: {2}s, upload max filesize: {3}, opcache enabled: {4}'.format(xml_php_version, calc_size_suffix(xml_php_memory_limit), xml_php_max_execution_time, calc_size_suffix(xml_php_upload_max_filesize), xml_php_opcache_enabled))
 	sys.exit(0)
 
 # Get informations about the database
@@ -298,3 +307,44 @@ if options.check == 'apps':
 			xml_apps_list.append('{0}->{1}'.format(app.tag, app.text))
 		print('WARNING - {0} apps require update: {1}'.format(xml_apps_num_updates_available, ' ,'.join(xml_apps_list)))
 		sys.exit(1)
+
+# Get information about server updates or app updates
+if options.check == 'updates':
+	xml_apps = xml_root.find('data').find('nextcloud').find('system').find('apps')
+
+	if xml_apps is not None:
+		xml_apps_num_updates_available = int(xml_apps.find('num_updates_available').text)
+	else:
+		xml_apps_num_updates_available = 0
+
+	if xml_apps_num_updates_available > 0:
+                xml_apps_updates = xml_apps.find('app_updates')
+                xml_apps_list = [] 
+                for app in xml_apps_updates:
+                        xml_apps_list.append('{0}->{1}'.format(app.tag, app.text))
+                apps_updates = '{0} apps require update: {1}'.format(xml_apps_num_updates_available, ' ,'.join(xml_apps_list))
+
+	xml_server_update = xml_root.find('data').find('nextcloud').find('system').find('update')
+
+	if xml_server_update is not None:
+		xml_server_update_available = xml_server_update.find('available')
+		if xml_server_update_available is not None and len(xml_server_update_available)>0:
+			xml_server_update_available_bool = True
+			server_update = 'New server version available: {0}'.format(xml_server_update.find('available_version').text)
+		else:
+			xml_server_update_available_bool = False
+
+	if xml_server_update_available == True and xml_apps_num_updates_available > 0:
+		print('WARNING - {0} - {1}'.format(server_update, apps_updates))
+		sys.exit(1)
+	elif xml_server_update_available == True:
+		print('WARNING - {0}'.format(server_update))
+		sys.exit(1)
+	elif xml_apps_num_updates_available > 0:
+		print('WARNING - {0}'.format(apps_updates))
+		sys.exit(1)
+	else:
+		print('OK - No updates available')
+		sys.exit(0)
+
+	
