@@ -310,6 +310,7 @@ if options.check == 'apps':
 
 # Get information about server updates or app updates
 if options.check == 'updates':
+
 	xml_apps = xml_root.find('data').find('nextcloud').find('system').find('apps')
 
 	if xml_apps is not None:
@@ -328,16 +329,16 @@ if options.check == 'updates':
 
 	if xml_server_update is not None:
 		xml_server_update_available = xml_server_update.find('available')
-		if xml_server_update_available is not None and len(xml_server_update_available)>0:
+		if xml_server_update_available is not None and xml_server_update_available.text=='1':
 			xml_server_update_available_bool = True
 			server_update = 'New server version available: {0}'.format(xml_server_update.find('available_version').text)
 		else:
 			xml_server_update_available_bool = False
 
-	if xml_server_update_available == True and xml_apps_num_updates_available > 0:
+	if xml_server_update_available_bool == True and xml_apps_num_updates_available > 0:
 		print('WARNING - {0} - {1}'.format(server_update, apps_updates))
 		sys.exit(1)
-	elif xml_server_update_available == True:
+	elif xml_server_update_available_bool == True:
 		print('WARNING - {0}'.format(server_update))
 		sys.exit(1)
 	elif xml_apps_num_updates_available > 0:
