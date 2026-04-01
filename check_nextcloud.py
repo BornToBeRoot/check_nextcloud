@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 
-###############################################################################################################
+######################################################################################################################################
 # Language     :  Python 3
 # Filename     :  check_nextcloud.py
 # Autor        :  https://github.com/BornToBeRoot
-# Description  :  Nagios/Centreon plugin for nextcloud serverinfo API (https://github.com/nextcloud/serverinfo)
+# Description  :  Nagios/Centreon/Icinga monitoring plugin for the Nextcloud serverinfo API (https://github.com/nextcloud/serverinfo)
 # Repository   :  https://github.com/BornToBeRoot/check_nextcloud
-###############################################################################################################
+######################################################################################################################################
 
 ### Changelog ###
 #
@@ -23,6 +23,8 @@
 #  ~~ Version 2.1 ~~
 # - Parameter "--context" added for deployments where nexcloud is not in the root of the webserver
 # - Check for Nextcloud core and app updates added ("-c updates")
+#  ~~ Version 2.2 ~~
+# - Bugfix for uploadFilesize check
 #
 #################
 
