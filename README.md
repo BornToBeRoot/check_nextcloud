@@ -25,7 +25,7 @@ Options:
                         is a trusted domain in the config.php)
   -c CHECK, --check=CHECK
                         The thing you want to check
-                        [system|storage|shares|webserver|php|database|activeUsers|uploadFilesize|apps]
+                        [system|storage|shares|webserver|php|database|activeUsers|uploadFilesize|apps|updates]
   --perfdata-format=PERFDATA_FORMAT
                         Format for the performance data [centreon|nagios]
                         (default="centreon")
