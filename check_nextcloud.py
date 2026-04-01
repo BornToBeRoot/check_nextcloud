@@ -47,6 +47,49 @@ def calc_size_nagios(num, suffix='B'):
 
 	return "%.1f%s%s" % (num, 'Y', suffix)
 
+def convert_size_to_bytes(size_str):
+    """Convert human-readable file sizes to bytes.
+
+    Handles common suffixes (kb, mb, gb, tb, pb, eb, zb, yb and their
+    KiB/MiB/… variants as well as full words like kilobyte/megabyte/…).
+    """
+    multipliers = {
+        'kilobyte':  1024,
+        'megabyte':  1024 ** 2,
+        'gigabyte':  1024 ** 3,
+        'terabyte':  1024 ** 4,
+        'petabyte':  1024 ** 5,
+        'exabyte':   1024 ** 6,
+        'zetabyte':  1024 ** 7,
+        'yottabyte': 1024 ** 8,
+        'kb': 1024,
+        'mb': 1024 ** 2,
+        'gb': 1024 ** 3,
+        'tb': 1024 ** 4,
+        'pb': 1024 ** 5,
+        'eb': 1024 ** 6,
+        'zb': 1024 ** 7,
+        'yb': 1024 ** 8,
+        'kib': 1024,
+        'mib': 1024 ** 2,
+        'gib': 1024 ** 3,
+        'tib': 1024 ** 4,
+        'pib': 1024 ** 5,
+        'eib': 1024 ** 6,
+        'zib': 1024 ** 7,
+        'yib': 1024 ** 8,
+    }
+
+    size_str = size_str.lower().strip().rstrip('s')
+    for suffix in multipliers:
+        if size_str.endswith(suffix):
+            return int(float(size_str[:-len(suffix)]) * multipliers[suffix])
+    if size_str.endswith('b'):
+        size_str = size_str[:-1]
+    elif size_str.endswith('byte'):
+        size_str = size_str[:-4]
+    return int(size_str)
+
 # Command line parser
 from optparse import OptionParser
 
@@ -295,8 +338,8 @@ if options.check == 'uploadFilesize':
 	# Convert
 	upload_max_filesize = calc_size_suffix(xml_php_upload_max_filesize)
 
-	if options.upload_filesize == upload_max_filesize:
-		print('OK - Upload max filesize: {0}'.format(upload_max_filesize))
+	if convert_size_to_bytes(upload_max_filesize) >= convert_size_to_bytes(options.upload_filesize):
+		print('OK - Upload max filesize: {0} >= {1}'.format(upload_max_filesize, options.upload_filesize))
 		sys.exit(0)
 	else:
 		print('CRITICAL - Upload max filesize is set to {0}, but should be {1}'.format(upload_max_filesize, options.upload_filesize))
