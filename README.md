@@ -1,8 +1,14 @@
-# Nagios/Centron check | Nextcloud serverinfo
+# check_nextcloud
 
-Nagios/Centreon plugin for nextcloud serverinfo API (https://github.com/nextcloud/serverinfo)
+Nagios/Centreon/Icinga monitoring plugin for the [Nextcloud serverinfo API](https://github.com/nextcloud/serverinfo).
 
-This branch contains the check for Python 3. A version for Python 2.7 can be found [here](https://github.com/BornToBeRoot/check_nextcloud/tree/stable-python2.7).
+## Features
+
+- Monitor **system info**, **storage**, **shares**, **active users**, **PHP**, **database**, and **webserver** status
+- Check for **Nextcloud core and app updates** with a single command
+- Performance data output for **Centreon** and **Nagios** graph formats
+- Support for **token-based** and **basic authentication**
+- Configurable for **reverse proxy**, **custom context paths**, and **self-signed certificates**
 
 ## Syntax / Help
 
@@ -98,7 +104,7 @@ Adjust the command path to your local situation.
 
 ```
 object CheckCommand "check_nextcloud" {
-  command = [ "/var/lib/nagios/src/check_nextcloud/check/check_nextcloud.py" ]
+  command = [ "/var/lib/nagios/src/check_nextcloud/check_nextcloud.py" ]
   arguments = {
     "--nc-token" = {
       value = "$nextcloud_token$"
