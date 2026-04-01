@@ -7,7 +7,7 @@ This branch contains the check for Python 3. A version for Python 2.7 can be fou
 ## Syntax / Help
 
 ```
-./check_nextcloud.py -u username -p password -H cloud.example.com -c [system|storage|shares|webserver|php|database|users|apps|updates]
+./check_nextcloud.py -u username -p password -H cloud.example.com -c [system|storage|shares|webserver|php|database|activeUsers|uploadFilesize|apps]
 
 
 Options:
