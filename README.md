@@ -29,7 +29,7 @@ Options:
   --perfdata-format=PERFDATA_FORMAT
                         Format for the performance data [centreon|nagios]
                         (default="centreon")
-  --upload-filesize     Filesize in MiB, GiB without spaces (default="512.0GiB")
+  --upload-filesize     Filesize in MiB, GiB without spaces (default="512.0MiB")
   --protocol=PROTOCOL   Protocol you want to use [http|https]
                         (default="https")
   --ignore-proxy        Ignore any configured proxy server on this system for

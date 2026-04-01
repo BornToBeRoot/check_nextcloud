@@ -105,7 +105,8 @@ else:
 
 # Create the url to access the api
 if options.context:
-	url = '{0}://{1}{2}{3}'.format(options.protocol, hostname, options.context, api_url)
+	context = '/' + options.context.strip('/')
+	url = '{0}://{1}{2}{3}'.format(options.protocol, hostname, context, api_url)
 else:
 	url = '{0}://{1}{2}'.format(options.protocol, hostname, api_url)
 
@@ -310,8 +311,9 @@ if options.check == 'apps':
 	else:
 		xml_apps_updates = xml_apps.find('app_updates')
 		xml_apps_list = []
-		for app in xml_apps_updates:
-			xml_apps_list.append('{0}->{1}'.format(app.tag, app.text))
+		if xml_apps_updates is not None:
+			for app in xml_apps_updates:
+				xml_apps_list.append('{0}->{1}'.format(app.tag, app.text))
 		print('WARNING - {0} apps require update: {1}'.format(xml_apps_num_updates_available, ' ,'.join(xml_apps_list)))
 		sys.exit(1)
 
@@ -327,20 +329,22 @@ if options.check == 'updates':
 
 	if xml_apps_num_updates_available > 0:
 		xml_apps_updates = xml_apps.find('app_updates')
-		xml_apps_list = [] 
-		for app in xml_apps_updates:
-			xml_apps_list.append('{0}->{1}'.format(app.tag, app.text))
+		xml_apps_list = []
+		if xml_apps_updates is not None:
+			for app in xml_apps_updates:
+				xml_apps_list.append('{0}->{1}'.format(app.tag, app.text))
 		apps_updates = '{0} apps require update: {1}'.format(xml_apps_num_updates_available, ' ,'.join(xml_apps_list))
 
 	xml_server_update = xml_root.find('data').find('nextcloud').find('system').find('update')
+
+	xml_server_update_available_bool = False
+	server_update = ''
 
 	if xml_server_update is not None:
 		xml_server_update_available = xml_server_update.find('available')
 		if xml_server_update_available is not None and xml_server_update_available.text=='1':
 			xml_server_update_available_bool = True
 			server_update = 'New server version available: {0}'.format(xml_server_update.find('available_version').text)
-		else:
-			xml_server_update_available_bool = False
 
 	if xml_server_update_available_bool == True and xml_apps_num_updates_available > 0:
 		print('WARNING - {0} - {1}'.format(server_update, apps_updates))
