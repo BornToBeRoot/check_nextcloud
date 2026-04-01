@@ -241,7 +241,15 @@ if options.check == 'php':
 	xml_php_memory_limit = int(xml_php.find('memory_limit').text)
 	xml_php_max_execution_time = str(xml_php.find('max_execution_time').text)
 	xml_php_upload_max_filesize = int(xml_php.find('upload_max_filesize').text)
-	xml_php_opcache_enabled = str(xml_php.find('opcache').find('opcache_enabled').text)
+	opcache_elem = xml_php.find('opcache')
+	if opcache_elem is not None:
+		opcache_enabled_elem = opcache_elem.find('opcache_enabled')
+		if opcache_enabled_elem is not None and opcache_enabled_elem.text is not None:
+			xml_php_opcache_enabled = str(opcache_enabled_elem.text)
+		else:
+			xml_php_opcache_enabled = 'unknown'
+	else:
+		xml_php_opcache_enabled = 'unknown'
 
 	print('OK - PHP version: {0}, memory limit {1}, max execution time: {2}s, upload max filesize: {3}, opcache enabled: {4}'.format(xml_php_version, calc_size_suffix(xml_php_memory_limit), xml_php_max_execution_time, calc_size_suffix(xml_php_upload_max_filesize), xml_php_opcache_enabled))
 	sys.exit(0)
