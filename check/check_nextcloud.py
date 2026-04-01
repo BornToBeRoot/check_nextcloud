@@ -318,11 +318,11 @@ if options.check == 'updates':
 		xml_apps_num_updates_available = 0
 
 	if xml_apps_num_updates_available > 0:
-                xml_apps_updates = xml_apps.find('app_updates')
-                xml_apps_list = [] 
-                for app in xml_apps_updates:
-                        xml_apps_list.append('{0}->{1}'.format(app.tag, app.text))
-                apps_updates = '{0} apps require update: {1}'.format(xml_apps_num_updates_available, ' ,'.join(xml_apps_list))
+		xml_apps_updates = xml_apps.find('app_updates')
+		xml_apps_list = [] 
+		for app in xml_apps_updates:
+			xml_apps_list.append('{0}->{1}'.format(app.tag, app.text))
+		apps_updates = '{0} apps require update: {1}'.format(xml_apps_num_updates_available, ' ,'.join(xml_apps_list))
 
 	xml_server_update = xml_root.find('data').find('nextcloud').find('system').find('update')
 
