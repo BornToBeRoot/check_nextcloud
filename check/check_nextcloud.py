@@ -187,7 +187,6 @@ if(options.perfdata_format == 'centreon'):		# centreon
 # [output]
 if options.check == 'system':
 	xml_system = xml_root.find('data').find('nextcloud').find('system')
-	#print(content)
 
 	xml_system_version = str(xml_system.find('version').text)
 
