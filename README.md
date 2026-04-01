@@ -7,7 +7,7 @@ This branch contains the check for Python 3. A version for Python 2.7 can be fou
 ## Syntax / Help
 
 ```
-./check_nextcloud.py -u username -p password -H cloud.example.com -c [system|storage|shares|webserver|php|database|users|apps]
+./check_nextcloud.py -u username -p password -H cloud.example.com -c [system|storage|shares|webserver|php|database|activeUsers|uploadFilesize|updates]
 
 
 Options:
@@ -25,14 +25,22 @@ Options:
                         is a trusted domain in the config.php)
   -c CHECK, --check=CHECK
                         The thing you want to check
-                        [system|storage|shares|webserver|php|database|activeUsers|uploadFilesize|apps]
-  --upload-filesize     Filesize in MiB, GiB without spaces (default="512.0GiB")
+                        [system|storage|shares|webserver|php|database|activeUsers|uploadFilesize|updates]
+  --perfdata-format=PERFDATA_FORMAT
+                        Format for the performance data [centreon|nagios]
+                        (default="centreon")
+  --upload-filesize     Filesize in MiB, GiB without spaces (default="512.0MiB")
   --protocol=PROTOCOL   Protocol you want to use [http|https]
                         (default="https")
   --ignore-proxy        Ignore any configured proxy server on this system for
                         this request
+  --ignore-sslcert      Ignore ssl certificate (default="false")
   --api-url=API_URL     Url of the api
                         (default="/ocs/v2.php/apps/serverinfo/api/v1/info")
+  --context=CONTEXT     Webserver context where Nextcloud is running (for
+                        example "/mycloud"). It will be prepended to api-url
+                        parameter
+
 
 ```
 
@@ -118,7 +126,7 @@ object CheckCommand "check_nextcloud" {
 ```
 
 ```
-apply Service for (checkname in ["system","storage","shares","webserver","php","database","activeUsers","uploadFilesize","apps"]) {
+apply Service for (checkname in ["system","storage","shares","webserver","php","database","activeUsers","uploadFilesize","updates"]) {
   import "generic-service"
   name = "check-nextcloud-" + checkname
   check_interval = 30m
