@@ -343,7 +343,7 @@ if options.check == 'uploadFilesize':
 	# Convert
 	upload_max_filesize = calc_size_suffix(xml_php_upload_max_filesize)
 
-	if convert_size_to_bytes(upload_max_filesize) >= convert_size_to_bytes(options.upload_filesize):
+	if xml_php_upload_max_filesize >= convert_size_to_bytes(options.upload_filesize):
 		print('OK - Upload max filesize: {0} >= {1}'.format(upload_max_filesize, options.upload_filesize))
 		sys.exit(0)
 	else:
