@@ -88,7 +88,12 @@ def convert_size_to_bytes(size_str):
         size_str = size_str[:-1]
     elif size_str.endswith('byte'):
         size_str = size_str[:-4]
-    return int(size_str)
+    size_str = size_str.strip()
+    try:
+        # Allow decimal byte values (e.g. "0.0", "1.5") by parsing as float first.
+        return int(float(size_str))
+    except ValueError as exc:
+        raise ValueError("Invalid size value: %r" % size_str) from exc
 
 # Command line parser
 from optparse import OptionParser
