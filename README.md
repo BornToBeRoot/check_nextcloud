@@ -46,6 +46,8 @@ Options:
   --context=CONTEXT     Webserver context where Nextcloud is running (for
                         example "/mycloud"). It will be prepended to api-url
                         parameter
+  --tracehttp           Show http protocol traces for debugging
+                        (default="false")
 
 
 ```
